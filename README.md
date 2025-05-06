@@ -1,4 +1,5 @@
 # COMP2537-Assignment1
+Calvin Chan Set1C
 Self-graded Assignment 1 Checklist
 
     Criteria	
