@@ -84,13 +84,28 @@ app.post("/submitUser", async (req, res) => {
     let name = req.body.name;
     let username = req.body.username;
     let password = req.body.password;
-    
+    let errorHtml =`<a href="/signup">Try again</a>`;
+
+    if (name === "") {
+        res.send("Name is required  <br /><br />" + errorHtml);
+        return;
+    }
+    if (username === "") {
+        res.send("Email is required  <br /><br />" + errorHtml);
+        return;
+    } 
+    if (password === "") {
+        res.send("Password is required  <br /><br />" + errorHtml);
+        return;
+    }
+    //Password validator
     const schema = Joi.object(
 	{
         name:Joi.string().alphanum().max(20).required(),
         username: Joi.string().max(20).required(),
         password: Joi.string().max(20).required()
     });
+
     
 	const validationResult = schema.validate({name, username, password});
 	if (validationResult.error != null) {
@@ -112,6 +127,11 @@ app.post("/submitUser", async (req, res) => {
 
 
 app.get("/login", (req, res) => {
+    
+    let htmlError = "";
+    if (req.query.error) {
+        htmlError = `<h3 style='color:red;'>${req.query.error}</h3>`;
+    }
     var html = `
     log in
     <form action="/loggingin" method="post">
@@ -119,6 +139,7 @@ app.get("/login", (req, res) => {
     <input name="password" type="password" placeholder ="password" /><br />
     <button>Submit</button>
     </form>
+    ${htmlError}
     `;
     res.send(html);
     
@@ -137,7 +158,7 @@ app.post("/loggingin", async (req, res) => {
     const validationResult = schema.validate({username, password});
     if (validationResult.error != null) {
         console.log(validationResult.error);
-        res.redirect("/login");
+        res.redirect("/login?error=SQL injection");
         return;
     }
     
@@ -145,7 +166,7 @@ app.post("/loggingin", async (req, res) => {
     
     if (result.length != 1) {
 		console.log("user not found");
-		res.redirect("/login");
+		res.redirect("/login?error=user not found");
 		return;
 	}
 	if (await bcrypt.compare(password, result[0].password)) {
@@ -161,31 +182,10 @@ app.post("/loggingin", async (req, res) => {
 	}
 	else {
 		console.log("incorrect password");
-		res.redirect("/login");
+		res.redirect("/login?error=incorrect password");
 		return;
 	}
-    // // for (i = 0; i < users.length; i++) {
-    // //     if (users[i].username == username) {
-    // //         if(bcrypt.compareSync(password, users[i].password)){
-    // //             req.session.authenticated = true;
-    // //             req.session.username = username;
-    // //             req.session.cookie.maxAge = expireTime;
-    // //             res.send("done1")
-    // //             //res.redirect("/");
-    // //             return;
-    // //         }
-    //     }
-    // }
 });
-
-// app.get("/loggedin", (req, res) => {
-//     if(!req.session.authenticated){
-//         res.redirect("/login");
-//     }
-//     else {
-//         res.redirect("/")
-//     }
-// });
 
 app.get('/logout', (req,res) => {
 	req.session.destroy();
